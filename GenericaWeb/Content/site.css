@@ -1,0 +1,5 @@
+﻿.login-card { width: 100%; max-width: 380px; }
+.table td, .table th { vertical-align: middle; }
+.lista-paginas { max-height: 320px; overflow-y: auto; }
+.lista-paginas input[type=checkbox] { margin-right: .4rem; }
+.lista-paginas label { cursor: pointer; }

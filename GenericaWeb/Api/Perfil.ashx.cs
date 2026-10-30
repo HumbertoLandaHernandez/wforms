@@ -29,7 +29,9 @@ namespace GenericaWeb.Api
                 usuario.NombreCompleto,
                 usuario.RolId,
                 usuario.RolDesc,
+                roles = UsuarioRepositorio.DescripcionRoles(usuario.UsuarioId),
                 usuario.PermisoId,
+                permisos = UsuarioRepositorio.PermisosEfectivos(usuario.UsuarioId),
                 usuario.PaginaHome,
                 menu = PaginaRepositorio.MenuDeUsuario(usuario.UsuarioId)
             });

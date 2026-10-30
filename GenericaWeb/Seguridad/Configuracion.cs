@@ -20,10 +20,10 @@ namespace GenericaWeb.Seguridad
         public static string JwtAudiencia => ConfigurationManager.AppSettings["Jwt:Audiencia"] ?? "GenericaWeb";
         public static int JwtMinutosExpiracion => int.Parse(ConfigurationManager.AppSettings["Jwt:MinutosExpiracion"] ?? "60");
 
-        /// <summary>Los usuarios con este rol acceden a todas las páginas.</summary>
+        /// <summary>Los usuarios con este rol (principal o en UsuarioRol) acceden a todo.</summary>
         public static byte RolAdministradorId => byte.Parse(ConfigurationManager.AppSettings["Seguridad:RolAdministradorId"] ?? "1");
 
-        /// <summary>Los usuarios con este PermisoId no pueden crear, modificar ni eliminar.</summary>
-        public static short PermisoSoloLecturaId => short.Parse(ConfigurationManager.AppSettings["Seguridad:PermisoSoloLecturaId"] ?? "1");
+        /// <summary>PermisoId necesario para crear, modificar y eliminar.</summary>
+        public static short PermisoEscrituraId => short.Parse(ConfigurationManager.AppSettings["Seguridad:PermisoEscrituraId"] ?? "2");
     }
 }

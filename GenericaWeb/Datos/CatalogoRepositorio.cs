@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 
 namespace GenericaWeb.Datos
@@ -11,57 +13,70 @@ namespace GenericaWeb.Datos
         public string Titulo { get; set; }
         public string Tabla { get; set; }
         public string ColumnaId { get; set; }
+        /// <summary>true: Id varchar capturado por el usuario (NombreTipo). false: Id IDENTITY.</summary>
+        public bool IdEsTexto { get; set; }
+        public int LongitudId { get; set; }
         public string ColumnaDesc { get; set; }
         public int LongitudDesc { get; set; }
         public string ColumnaUsys { get; set; }
-        /// <summary>Permiso.PermisosUsys es int: se guarda el UsuarioId en lugar del nombre.</summary>
-        public bool UsysEsEntero { get; set; }
-        /// <summary>Columna datetime2 a actualizar en cada modificación (null si la tabla usa rowversion).</summary>
+        /// <summary>Columna datetime2 a actualizar en cada modificación (null si la tabla usa timestamp).</summary>
         public string ColumnaFecha { get; set; }
     }
 
     /// <summary>
-    /// CRUD genérico para NombrePersonal, NombreBase, NombreTipo y Permiso.
+    /// CRUD genérico para Nombre, NombreTipo y Permiso.
     /// Los nombres de tabla/columna provienen solo de esta lista blanca, nunca del usuario.
     /// </summary>
     public static class CatalogoRepositorio
     {
         public static readonly IReadOnlyList<CatalogoDefinicion> Catalogos = new[]
         {
-            new CatalogoDefinicion { Clave = "NombrePersonal", Titulo = "Nombres personales", Tabla = "Sistema.NombrePersonal",
-                ColumnaId = "NombrePersonalId", ColumnaDesc = "NombrePersonalDesc", LongitudDesc = 150, ColumnaUsys = "NombrePersonalUsys" },
-            new CatalogoDefinicion { Clave = "NombreBase", Titulo = "Nombres base", Tabla = "Sistema.NombreBase",
-                ColumnaId = "NombreBaseId", ColumnaDesc = "NombreBaseDesc", LongitudDesc = 50, ColumnaUsys = "NombreBaseUsys", ColumnaFecha = "NombreBaseDT" },
+            new CatalogoDefinicion { Clave = "Nombre", Titulo = "Nombres", Tabla = "Sistema.Nombre",
+                ColumnaId = "NombreId", ColumnaDesc = "NombreDesc", LongitudDesc = 50, ColumnaUsys = "NombreUsys", ColumnaFecha = "NombreDT" },
             new CatalogoDefinicion { Clave = "NombreTipo", Titulo = "Tipos de nombre", Tabla = "Sistema.NombreTipo",
-                ColumnaId = "NombreTipoId", ColumnaDesc = "NombreTipoDesc", LongitudDesc = 50, ColumnaUsys = "NombreTipoUsys" },
+                ColumnaId = "NombreTipoId", IdEsTexto = true, LongitudId = 50, ColumnaDesc = "NombreTipoDesc", LongitudDesc = 50,
+                ColumnaUsys = "NombreTipoUsys" },
             new CatalogoDefinicion { Clave = "Permiso", Titulo = "Permisos", Tabla = "Sistema.Permiso",
-                ColumnaId = "PermisoId", ColumnaDesc = "PermisoDesc", LongitudDesc = 50, ColumnaUsys = "PermisosUsys", UsysEsEntero = true }
+                ColumnaId = "PermisoId", ColumnaDesc = "PermisoDesc", LongitudDesc = 50, ColumnaUsys = "PermisosUsys", ColumnaFecha = "PermisosRV" }
         };
 
         public static CatalogoDefinicion Buscar(string clave)
         {
-            return Catalogos.FirstOrDefault(c => c.Clave.Equals(clave ?? string.Empty, System.StringComparison.OrdinalIgnoreCase))
+            return Catalogos.FirstOrDefault(c => c.Clave.Equals(clave ?? string.Empty, StringComparison.OrdinalIgnoreCase))
                    ?? Catalogos[0];
         }
 
         public static DataTable Listar(CatalogoDefinicion def)
         {
-            return Db.Consultar($@"SELECT {def.ColumnaId} AS Id, {def.ColumnaDesc} AS Descripcion,
-                                   CAST({def.ColumnaUsys} AS varchar(30)) AS Usys
+            return Db.Consultar($@"SELECT CAST({def.ColumnaId} AS varchar(50)) AS Id, {def.ColumnaDesc} AS Descripcion,
+                                   {def.ColumnaUsys} AS Usys
                                    FROM {def.Tabla} ORDER BY {def.ColumnaDesc}");
         }
 
-        public static string ObtenerDescripcion(CatalogoDefinicion def, int id)
+        public static string ObtenerDescripcion(CatalogoDefinicion def, string id)
         {
-            return Db.Escalar($"SELECT {def.ColumnaDesc} FROM {def.Tabla} WHERE {def.ColumnaId} = @Id", Db.P("@Id", id)) as string;
+            return Db.Escalar($"SELECT {def.ColumnaDesc} FROM {def.Tabla} WHERE {def.ColumnaId} = @Id", ParametroId(def, id)) as string;
         }
 
-        public static void Guardar(CatalogoDefinicion def, int id, string descripcion, short usuarioId, string usuarioDesc)
+        /// <summary>
+        /// idExistente vacío = alta. En catálogos con Id de texto, idNuevo es la clave capturada para el alta
+        /// (la clave no se modifica al editar porque la referencian otras tablas).
+        /// </summary>
+        public static void Guardar(CatalogoDefinicion def, string idExistente, string idNuevo, string descripcion, string usys)
         {
-            var usys = def.UsysEsEntero ? Db.P("@Usys", (int)usuarioId) : Db.Texto("@Usys", usuarioDesc, 30);
-            var parametros = new[] { Db.P("@Id", id), usys, Db.Texto("@Desc", descripcion, def.LongitudDesc) };
+            var esAlta = string.IsNullOrEmpty(idExistente);
+            var parametros = new[]
+            {
+                ParametroId(def, esAlta ? idNuevo : idExistente),
+                Db.Texto("@Usys", usys, 30),
+                Db.Texto("@Desc", descripcion, def.LongitudDesc)
+            };
 
-            if (id == 0)
+            if (esAlta && def.IdEsTexto)
+            {
+                Db.Ejecutar($"INSERT INTO {def.Tabla} ({def.ColumnaUsys}, {def.ColumnaId}, {def.ColumnaDesc}) VALUES (@Usys, @Id, @Desc)", parametros);
+            }
+            else if (esAlta)
             {
                 Db.Ejecutar($"INSERT INTO {def.Tabla} ({def.ColumnaUsys}, {def.ColumnaDesc}) VALUES (@Usys, @Desc)", parametros);
             }
@@ -72,9 +87,14 @@ namespace GenericaWeb.Datos
             }
         }
 
-        public static void Eliminar(CatalogoDefinicion def, int id)
+        public static void Eliminar(CatalogoDefinicion def, string id)
         {
-            Db.Ejecutar($"DELETE FROM {def.Tabla} WHERE {def.ColumnaId} = @Id", Db.P("@Id", id));
+            Db.Ejecutar($"DELETE FROM {def.Tabla} WHERE {def.ColumnaId} = @Id", ParametroId(def, id));
+        }
+
+        private static SqlParameter ParametroId(CatalogoDefinicion def, string id)
+        {
+            return def.IdEsTexto ? Db.Texto("@Id", id, def.LongitudId) : Db.P("@Id", int.Parse(id));
         }
     }
 }

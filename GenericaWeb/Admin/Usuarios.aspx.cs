@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Web.UI.WebControls;
 using GenericaWeb.Datos;
 using GenericaWeb.Modelos;
@@ -14,10 +15,11 @@ namespace GenericaWeb.Admin
             if (IsPostBack)
                 return;
 
-            Combos.NombresPersonales(ddlNombre);
+            Combos.NombresCompletos(ddlNombre);
             Combos.Roles(ddlRol);
+            Combos.Roles(cblRoles, false);
             Combos.Permisos(ddlPermiso);
-            Combos.ListasPermisos(ddlPermisosPaginas, true);
+            Combos.ListasPaginas(ddlPermisosPaginas);
             Combos.Paginas(ddlPaginaHome, true);
             pnlEdicion.Visible = PuedeEditar;
             CargarGrid();
@@ -40,6 +42,9 @@ namespace GenericaWeb.Admin
                 Combos.Seleccionar(ddlPermiso, fila["UsuarioPermisosId"]);
                 Combos.Seleccionar(ddlPermisosPaginas, fila["UsuarioPermisosPaginasId"]);
                 Combos.Seleccionar(ddlPaginaHome, fila["UsuarioPaginaHomeId"]);
+                var roles = UsuarioRepositorio.RolesAsignados(id);
+                foreach (ListItem item in cblRoles.Items)
+                    item.Selected = roles.Contains(byte.Parse(item.Value));
                 litTitulo.Text = "Editar usuario";
                 litAyudaContrasena.Text = "(en blanco = no cambiar)";
             }
@@ -77,7 +82,8 @@ namespace GenericaWeb.Admin
                 RolId = byte.Parse(ddlRol.SelectedValue),
                 PermisosId = short.Parse(ddlPermiso.SelectedValue),
                 PermisosPaginasId = int.Parse(ddlPermisosPaginas.SelectedValue),
-                PaginaHomeId = short.Parse(ddlPaginaHome.SelectedValue)
+                PaginaHomeId = short.Parse(ddlPaginaHome.SelectedValue),
+                Roles = cblRoles.Items.Cast<ListItem>().Where(i => i.Selected).Select(i => byte.Parse(i.Value)).ToList()
             };
 
             string hash = null;
@@ -125,6 +131,7 @@ namespace GenericaWeb.Admin
             txtContrasena.Text = string.Empty;
             ddlNombre.SelectedIndex = ddlRol.SelectedIndex = ddlPermiso.SelectedIndex = 0;
             ddlPermisosPaginas.SelectedIndex = ddlPaginaHome.SelectedIndex = 0;
+            cblRoles.ClearSelection();
             litTitulo.Text = "Nuevo usuario";
             litAyudaContrasena.Text = "(mínimo 8 caracteres)";
         }

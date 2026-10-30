@@ -7,7 +7,7 @@
                 <div class="card-header">Sesión</div>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item"><strong>Usuario:</strong> <asp:Literal ID="litUsuario" runat="server" Mode="Encode" /></li>
-                    <li class="list-group-item"><strong>Rol:</strong> <asp:Literal ID="litRol" runat="server" Mode="Encode" /></li>
+                    <li class="list-group-item"><strong>Roles:</strong> <asp:Literal ID="litRol" runat="server" Mode="Encode" /></li>
                     <li class="list-group-item"><strong>Permiso:</strong> <asp:Literal ID="litPermiso" runat="server" Mode="Encode" /></li>
                     <li class="list-group-item"><strong>Token expira (UTC):</strong> <asp:Literal ID="litExpira" runat="server" Mode="Encode" /></li>
                 </ul>

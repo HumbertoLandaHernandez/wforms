@@ -108,12 +108,12 @@
     <Compile Include="Admin\Paginas.aspx.designer.cs">
       <DependentUpon>Paginas.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Admin\PermisosPaginas.aspx.cs">
-      <DependentUpon>PermisosPaginas.aspx</DependentUpon>
+    <Compile Include="Admin\ListasPermisos.aspx.cs">
+      <DependentUpon>ListasPermisos.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Admin\PermisosPaginas.aspx.designer.cs">
-      <DependentUpon>PermisosPaginas.aspx</DependentUpon>
+    <Compile Include="Admin\ListasPermisos.aspx.designer.cs">
+      <DependentUpon>ListasPermisos.aspx</DependentUpon>
     </Compile>
     <Compile Include="Admin\Roles.aspx.cs">
       <DependentUpon>Roles.aspx</DependentUpon>
@@ -139,7 +139,7 @@
     <Compile Include="Datos\CatalogoRepositorio.cs" />
     <Compile Include="Datos\Combos.cs" />
     <Compile Include="Datos\Db.cs" />
-    <Compile Include="Datos\ListaPaginaRepositorio.cs" />
+    <Compile Include="Datos\PaginaListaRepositorio.cs" />
     <Compile Include="Datos\NombreListaRepositorio.cs" />
     <Compile Include="Datos\PaginaRepositorio.cs" />
     <Compile Include="Datos\PermisoListaRepositorio.cs" />
@@ -186,7 +186,7 @@
     <Content Include="Admin\ListasPaginas.aspx" />
     <Content Include="Admin\NombresLista.aspx" />
     <Content Include="Admin\Paginas.aspx" />
-    <Content Include="Admin\PermisosPaginas.aspx" />
+    <Content Include="Admin\ListasPermisos.aspx" />
     <Content Include="Admin\Roles.aspx" />
     <Content Include="Admin\Usuarios.aspx" />
     <Content Include="Api\Login.ashx" />

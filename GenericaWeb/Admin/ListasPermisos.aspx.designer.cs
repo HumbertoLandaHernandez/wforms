@@ -6,14 +6,16 @@
 
 namespace GenericaWeb.Admin
 {
-    public partial class PermisosPaginas
+    public partial class ListasPermisos
     {
         protected global::System.Web.UI.WebControls.Label lblMensaje;
         protected global::System.Web.UI.WebControls.GridView gvListas;
         protected global::System.Web.UI.WebControls.Panel pnlEdicion;
-        protected global::System.Web.UI.WebControls.TextBox txtListaId;
-        protected global::System.Web.UI.WebControls.Button btnNuevo;
-        protected global::System.Web.UI.WebControls.CheckBoxList cblPaginas;
+        protected global::System.Web.UI.WebControls.Literal litTitulo;
+        protected global::System.Web.UI.WebControls.HiddenField hfId;
+        protected global::System.Web.UI.WebControls.TextBox txtDesc;
+        protected global::System.Web.UI.WebControls.CheckBoxList cblPermisos;
         protected global::System.Web.UI.WebControls.Button btnGuardar;
+        protected global::System.Web.UI.WebControls.Button btnNuevo;
     }
 }

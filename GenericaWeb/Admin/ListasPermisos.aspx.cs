@@ -7,17 +7,16 @@ using GenericaWeb.Seguridad;
 
 namespace GenericaWeb.Admin
 {
-    public partial class PermisosPaginas : PaginaSegura
+    public partial class ListasPermisos : PaginaSegura
     {
         protected void Page_Load(object sender, EventArgs e)
         {
             if (IsPostBack)
                 return;
 
-            Combos.Paginas(cblPaginas, false);
+            Combos.Permisos(cblPermisos, false);
             pnlEdicion.Visible = PuedeEditar;
             CargarGrid();
-            Limpiar();
         }
 
         protected void gvListas_RowCommand(object sender, GridViewCommandEventArgs e)
@@ -25,10 +24,16 @@ namespace GenericaWeb.Admin
             var id = int.Parse((string)e.CommandArgument);
             if (e.CommandName == "Editar")
             {
-                var paginas = PermisoListaRepositorio.PaginasDeLista(id);
-                txtListaId.Text = id.ToString();
-                foreach (ListItem item in cblPaginas.Items)
-                    item.Selected = paginas.Contains(int.Parse(item.Value));
+                var desc = PermisoListaRepositorio.ObtenerDescripcion(id);
+                if (desc == null)
+                    return;
+
+                hfId.Value = id.ToString();
+                txtDesc.Text = desc;
+                var permisos = PermisoListaRepositorio.Elementos(id);
+                foreach (ListItem item in cblPermisos.Items)
+                    item.Selected = permisos.Contains(short.Parse(item.Value));
+                litTitulo.Text = "Editar lista";
             }
             else if (e.CommandName == "Eliminar" && ExigirEdicion(lblMensaje))
             {
@@ -51,17 +56,15 @@ namespace GenericaWeb.Admin
             if (!ExigirEdicion(lblMensaje) || !Page.IsValid)
                 return;
 
-            var paginas = cblPaginas.Items.Cast<ListItem>().Where(i => i.Selected).Select(i => int.Parse(i.Value)).ToList();
-            if (paginas.Count == 0)
-            {
-                MostrarMensaje(lblMensaje, "Seleccione al menos una página (o use Eliminar para borrar la lista).", false);
-                return;
-            }
-
+            var permisos = cblPermisos.Items.Cast<ListItem>().Where(i => i.Selected).Select(i => short.Parse(i.Value));
             try
             {
-                PermisoListaRepositorio.Guardar(int.Parse(txtListaId.Text), paginas, UsuarioActual.UsuarioDesc);
+                PermisoListaRepositorio.Guardar(
+                    string.IsNullOrEmpty(hfId.Value) ? 0 : int.Parse(hfId.Value),
+                    txtDesc.Text.Trim(), permisos, UsuarioActual.UsuarioDesc);
+
                 MostrarMensaje(lblMensaje, "Lista guardada.", true);
+                Limpiar();
                 CargarGrid();
             }
             catch (SqlException ex)
@@ -77,15 +80,14 @@ namespace GenericaWeb.Admin
 
         private void Limpiar()
         {
-            var siguiente = PermisoListaRepositorio.ListarResumen().Rows.Cast<System.Data.DataRow>()
-                .Select(f => (int)f["PermisoListaId"]).DefaultIfEmpty(0).Max() + 1;
-            txtListaId.Text = siguiente.ToString();
-            cblPaginas.ClearSelection();
+            hfId.Value = txtDesc.Text = string.Empty;
+            cblPermisos.ClearSelection();
+            litTitulo.Text = "Nueva lista";
         }
 
         private void CargarGrid()
         {
-            gvListas.DataSource = PermisoListaRepositorio.ListarResumen();
+            gvListas.DataSource = PermisoListaRepositorio.Listar();
             gvListas.DataBind();
         }
     }

@@ -9,15 +9,15 @@ namespace GenericaWeb.Datos
     public static class PaginaRepositorio
     {
         /// <summary>
-        /// Condición de acceso: rol administrador, o la página está en la PermisoLista
-        /// asignada al usuario (UsuarioPermisosPaginasId) o a su rol (RolPermisosId).
-        /// Requiere alias u (Usuario), r (Rol) y p (Pagina).
+        /// Condición de acceso: el usuario tiene el rol administrador (principal o en UsuarioRol),
+        /// o la página está en su lista de páginas (Usuario.UsuarioPermisosPaginasId → PaginaListaElemento).
+        /// Requiere alias u (Usuario) y p (Pagina).
         /// </summary>
         private const string CondicionAcceso = @"
-(u.UsuarioRolId = @RolAdmin OR EXISTS (
-    SELECT 1 FROM Sistema.PermisoLista pl
-    WHERE pl.PermisoListaPaginaId = p.PaginaId
-      AND pl.PermisoListaId IN (u.UsuarioPermisosPaginasId, r.RolPermisosId)))";
+(u.UsuarioRolId = @RolAdmin
+ OR EXISTS (SELECT 1 FROM Sistema.UsuarioRol ur WHERE ur.UsuarioId = u.UsuarioId AND ur.RolId = @RolAdmin)
+ OR EXISTS (SELECT 1 FROM Sistema.PaginaListaElemento ple
+            WHERE ple.PaginaId = p.PaginaId AND ple.PaginaListaId = u.UsuarioPermisosPaginasId))";
 
         public static bool TieneAcceso(short usuarioId, string ruta)
         {
@@ -25,7 +25,6 @@ namespace GenericaWeb.Datos
 SELECT CASE WHEN EXISTS (
     SELECT 1
     FROM Sistema.Usuario u
-    JOIN Sistema.Rol r ON r.RolId = u.UsuarioRolId
     LEFT JOIN Sistema.Pagina p ON p.PaginaDesc = @Ruta
     WHERE u.UsuarioId = @UsuarioId AND " + CondicionAcceso + @"
 ) THEN 1 ELSE 0 END",
@@ -35,18 +34,17 @@ SELECT CASE WHEN EXISTS (
             return Convert.ToInt32(resultado) == 1;
         }
 
-        /// <summary>Menú del usuario: grupos de Sistema.ListaPagina con las páginas a las que tiene acceso.</summary>
+        /// <summary>Menú del usuario: grupos de Sistema.PaginaLista con las páginas a las que tiene acceso.</summary>
         public static List<MenuGrupo> MenuDeUsuario(short usuarioId)
         {
             var tabla = Db.Consultar(@"
-SELECT lp.ListaPaginaId, lp.ListaPaginaDesc, p.PaginaDesc AS Ruta, p.Descripcion AS Titulo
-FROM Sistema.ListaPagina lp
-JOIN Sistema.ListaPaginaElemento e ON e.ListaPaginaId = lp.ListaPaginaId
+SELECT pl.PaginaListaId, pl.PaginaListaDesc, p.PaginaDesc AS Ruta, p.Descripcion AS Titulo
+FROM Sistema.PaginaLista pl
+JOIN Sistema.PaginaListaElemento e ON e.PaginaListaId = pl.PaginaListaId
 JOIN Sistema.Pagina p              ON p.PaginaId = e.PaginaId
 JOIN Sistema.Usuario u             ON u.UsuarioId = @UsuarioId
-JOIN Sistema.Rol r                 ON r.RolId = u.UsuarioRolId
 WHERE " + CondicionAcceso + @"
-ORDER BY lp.ListaPaginaDesc, lp.ListaPaginaId, p.Descripcion",
+ORDER BY pl.PaginaListaDesc, pl.PaginaListaId, p.Descripcion",
                 Db.P("@UsuarioId", usuarioId),
                 Db.P("@RolAdmin", Configuracion.RolAdministradorId));
 
@@ -55,10 +53,10 @@ ORDER BY lp.ListaPaginaDesc, lp.ListaPaginaId, p.Descripcion",
             object idActual = null;
             foreach (DataRow fila in tabla.Rows)
             {
-                if (actual == null || !fila["ListaPaginaId"].Equals(idActual))
+                if (actual == null || !fila["PaginaListaId"].Equals(idActual))
                 {
-                    idActual = fila["ListaPaginaId"];
-                    actual = new MenuGrupo { Titulo = (string)fila["ListaPaginaDesc"] };
+                    idActual = fila["PaginaListaId"];
+                    actual = new MenuGrupo { Titulo = (string)fila["PaginaListaDesc"] };
                     grupos.Add(actual);
                 }
                 actual.Paginas.Add(new MenuElemento { Ruta = (string)fila["Ruta"], Titulo = (string)fila["Titulo"] });
@@ -102,8 +100,7 @@ ORDER BY lp.ListaPaginaDesc, lp.ListaPaginaId, p.Descripcion",
 
             Db.Transaccion((c, t) =>
             {
-                Db.Ejecutar(c, t, "DELETE FROM Sistema.PermisoLista WHERE PermisoListaPaginaId = @Id", Db.P("@Id", paginaId));
-                Db.Ejecutar(c, t, "DELETE FROM Sistema.ListaPaginaElemento WHERE PaginaId = @Id", Db.P("@Id", paginaId));
+                Db.Ejecutar(c, t, "DELETE FROM Sistema.PaginaListaElemento WHERE PaginaId = @Id", Db.P("@Id", paginaId));
                 Db.Ejecutar(c, t, "DELETE FROM Sistema.Pagina WHERE PaginaId = @Id", Db.P("@Id", paginaId));
             });
             return true;

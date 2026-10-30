@@ -9,10 +9,11 @@
                 <Columns>
                     <asp:BoundField DataField="UsuarioId" HeaderText="Id" />
                     <asp:BoundField DataField="UsuarioDesc" HeaderText="Usuario" />
-                    <asp:BoundField DataField="NombrePersonalDesc" HeaderText="Nombre" />
-                    <asp:BoundField DataField="RolDesc" HeaderText="Rol" />
+                    <asp:BoundField DataField="NombreListaDesc" HeaderText="Nombre" />
+                    <asp:BoundField DataField="RolDesc" HeaderText="Rol principal" />
+                    <asp:BoundField DataField="RolesAdicionales" HeaderText="Otros roles" />
                     <asp:BoundField DataField="PermisoDesc" HeaderText="Permiso" />
-                    <asp:BoundField DataField="UsuarioPermisosPaginasId" HeaderText="Lista páginas" />
+                    <asp:BoundField DataField="PaginaListaDesc" HeaderText="Lista de páginas" />
                     <asp:BoundField DataField="PaginaHome" HeaderText="Inicio" />
                     <asp:BoundField DataField="UsuarioDT" HeaderText="Modificado" DataFormatString="{0:yyyy-MM-dd HH:mm}" />
                     <asp:TemplateField>
@@ -42,22 +43,28 @@
                     <asp:TextBox ID="txtContrasena" runat="server" CssClass="form-control" TextMode="Password" autocomplete="new-password" />
                 </div>
                 <div class="mb-2">
-                    <label class="form-label">Nombre personal</label>
+                    <label class="form-label">Nombre completo</label>
                     <asp:DropDownList ID="ddlNombre" runat="server" CssClass="form-select" />
                     <asp:RequiredFieldValidator runat="server" ControlToValidate="ddlNombre" InitialValue="" ErrorMessage="Requerido" CssClass="text-danger small" Display="Dynamic" />
                 </div>
                 <div class="mb-2">
-                    <label class="form-label">Rol</label>
+                    <label class="form-label">Rol principal</label>
                     <asp:DropDownList ID="ddlRol" runat="server" CssClass="form-select" />
                     <asp:RequiredFieldValidator runat="server" ControlToValidate="ddlRol" InitialValue="" ErrorMessage="Requerido" CssClass="text-danger small" Display="Dynamic" />
                 </div>
                 <div class="mb-2">
-                    <label class="form-label">Permiso</label>
+                    <label class="form-label">Otros roles <small class="text-muted">(Sistema.UsuarioRol)</small></label>
+                    <div class="border rounded p-2 lista-paginas">
+                        <asp:CheckBoxList ID="cblRoles" runat="server" RepeatLayout="Flow" RepeatDirection="Vertical" />
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Permiso individual</label>
                     <asp:DropDownList ID="ddlPermiso" runat="server" CssClass="form-select" />
                     <asp:RequiredFieldValidator runat="server" ControlToValidate="ddlPermiso" InitialValue="" ErrorMessage="Requerido" CssClass="text-danger small" Display="Dynamic" />
                 </div>
                 <div class="mb-2">
-                    <label class="form-label">Lista de páginas adicional</label>
+                    <label class="form-label">Lista de páginas permitidas</label>
                     <asp:DropDownList ID="ddlPermisosPaginas" runat="server" CssClass="form-select" />
                     <asp:RequiredFieldValidator runat="server" ControlToValidate="ddlPermisosPaginas" InitialValue="" ErrorMessage="Requerido" CssClass="text-danger small" Display="Dynamic" />
                 </div>

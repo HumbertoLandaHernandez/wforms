@@ -10,8 +10,9 @@
                     <asp:BoundField DataField="RolId" HeaderText="Id" />
                     <asp:BoundField DataField="RolDesc" HeaderText="Rol" />
                     <asp:BoundField DataField="PaginaHome" HeaderText="Página de inicio" />
-                    <asp:BoundField DataField="RolPermisosId" HeaderText="Lista páginas" />
+                    <asp:BoundField DataField="PermisoListaDesc" HeaderText="Lista de permisos" />
                     <asp:BoundField DataField="RolClassId" HeaderText="Clase" />
+                    <asp:BoundField DataField="Usuarios" HeaderText="Usuarios" />
                     <asp:BoundField DataField="RolUsys" HeaderText="Modificó" />
                     <asp:TemplateField>
                         <ItemTemplate>
@@ -41,7 +42,7 @@
                     <asp:RequiredFieldValidator runat="server" ControlToValidate="ddlPaginaHome" InitialValue="" ErrorMessage="Requerido" CssClass="text-danger small" Display="Dynamic" />
                 </div>
                 <div class="mb-2">
-                    <label class="form-label">Lista de páginas permitidas</label>
+                    <label class="form-label">Lista de permisos</label>
                     <asp:DropDownList ID="ddlPermisos" runat="server" CssClass="form-select" />
                     <asp:RequiredFieldValidator runat="server" ControlToValidate="ddlPermisos" InitialValue="" ErrorMessage="Requerido" CssClass="text-danger small" Display="Dynamic" />
                 </div>

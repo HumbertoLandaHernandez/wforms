@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -8,8 +9,9 @@ using GenericaWeb.Modelos;
 namespace GenericaWeb.Seguridad
 {
     /// <summary>
-    /// Página base: exige un JWT válido y que la página (Sistema.Pagina.PaginaDesc) esté
-    /// en la lista de permisos del usuario o de su rol (Sistema.PermisoLista).
+    /// Página base: exige un JWT válido y que la página (Sistema.Pagina.PaginaDesc) esté en la
+    /// lista de páginas del usuario (Usuario.UsuarioPermisosPaginasId → Sistema.PaginaListaElemento).
+    /// Los permisos de edición se leen de la BD en cada petición para reflejar cambios de inmediato.
     /// </summary>
     public class PaginaSegura : Page
     {
@@ -18,7 +20,14 @@ namespace GenericaWeb.Seguridad
         /// <summary>Las páginas accesibles para cualquier usuario autenticado devuelven false.</summary>
         protected virtual bool ValidarPermisoPagina => true;
 
-        protected bool PuedeEditar => UsuarioActual != null && UsuarioActual.PermisoId != Configuracion.PermisoSoloLecturaId;
+        protected bool EsAdministrador { get; private set; }
+
+        /// <summary>Permisos efectivos actuales (listas de permisos de sus roles + permiso individual).</summary>
+        protected HashSet<short> Permisos { get; private set; } = new HashSet<short>();
+
+        protected bool PuedeEditar => EsAdministrador || Permisos.Contains(Configuracion.PermisoEscrituraId);
+
+        protected bool TienePermiso(short permisoId) => EsAdministrador || Permisos.Contains(permisoId);
 
         protected override void OnInit(EventArgs e)
         {
@@ -31,6 +40,9 @@ namespace GenericaWeb.Seguridad
 
             // Protección CSRF: el ViewState queda ligado al usuario autenticado.
             ViewStateUserKey = UsuarioActual.UsuarioId.ToString();
+
+            EsAdministrador = UsuarioRepositorio.EsAdministrador(UsuarioActual.UsuarioId);
+            Permisos = UsuarioRepositorio.PermisosEfectivos(UsuarioActual.UsuarioId);
 
             if (ValidarPermisoPagina && !PaginaRepositorio.TieneAcceso(UsuarioActual.UsuarioId, Request.AppRelativeCurrentExecutionFilePath))
             {
@@ -46,7 +58,7 @@ namespace GenericaWeb.Seguridad
         {
             if (PuedeEditar)
                 return true;
-            MostrarMensaje(etiqueta, "Su permiso es de solo lectura.", false);
+            MostrarMensaje(etiqueta, "No tiene permiso de escritura.", false);
             return false;
         }
 

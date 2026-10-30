@@ -7,9 +7,12 @@ namespace GenericaWeb.Datos
         public static DataTable Listar()
         {
             return Db.Consultar(@"
-SELECT r.RolId, r.RolDesc, r.RolPaginaHomeId, p.Descripcion AS PaginaHome, r.RolPermisosId, r.RolClassId, r.RolUsys
+SELECT r.RolId, r.RolDesc, r.RolPaginaHomeId, p.Descripcion AS PaginaHome, r.RolPermisosId, pl.PermisoListaDesc,
+       r.RolClassId, r.RolUsys,
+       (SELECT COUNT(*) FROM Sistema.UsuarioRol ur WHERE ur.RolId = r.RolId) AS Usuarios
 FROM Sistema.Rol r
-LEFT JOIN Sistema.Pagina p ON p.PaginaId = r.RolPaginaHomeId
+LEFT JOIN Sistema.Pagina p        ON p.PaginaId = r.RolPaginaHomeId
+JOIN Sistema.PermisoLista pl      ON pl.PermisoListaId = r.RolPermisosId
 ORDER BY r.RolDesc");
         }
 

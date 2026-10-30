@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -19,10 +20,14 @@ namespace GenericaWeb.Seguridad
         {
             public const string UsuarioId = JwtRegisteredClaimNames.Sub;
             public const string Usuario = "name";
+            /// <summary>Uno por cada rol del usuario (IsInRole funciona con cualquiera).</summary>
             public const string Rol = "role";
             public const string RolId = "rol_id";
+            public const string RolPrincipal = "rol_principal";
             public const string NombreCompleto = "nombre";
             public const string PermisoId = "permiso_id";
+            /// <summary>Uno por cada permiso efectivo.</summary>
+            public const string Permisos = "permiso";
             public const string PaginaHome = "home";
         }
 
@@ -37,18 +42,22 @@ namespace GenericaWeb.Seguridad
             var ahora = DateTime.UtcNow;
             expiraUtc = ahora.AddMinutes(Configuracion.JwtMinutosExpiracion);
 
-            var claims = new[]
+            var claims = new List<Claim>
             {
                 new Claim(Claims.UsuarioId, usuario.UsuarioId.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
                 new Claim(JwtRegisteredClaimNames.Iat, EpochTime.GetIntDate(ahora).ToString(), ClaimValueTypes.Integer64),
                 new Claim(Claims.Usuario, usuario.UsuarioDesc),
-                new Claim(Claims.Rol, usuario.RolDesc ?? string.Empty),
                 new Claim(Claims.RolId, usuario.RolId.ToString()),
+                new Claim(Claims.RolPrincipal, usuario.RolDesc ?? string.Empty),
                 new Claim(Claims.NombreCompleto, usuario.NombreCompleto ?? string.Empty),
                 new Claim(Claims.PermisoId, usuario.PermisoId.ToString()),
                 new Claim(Claims.PaginaHome, usuario.PaginaHome ?? string.Empty)
             };
+            foreach (var rol in usuario.Roles)
+                claims.Add(new Claim(Claims.Rol, rol));
+            foreach (var permiso in usuario.Permisos)
+                claims.Add(new Claim(Claims.Permisos, permiso.ToString(), ClaimValueTypes.Integer32));
 
             var credenciales = new SigningCredentials(ObtenerLlave(), SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(Configuracion.JwtEmisor, Configuracion.JwtAudiencia, claims, ahora, expiraUtc, credenciales);

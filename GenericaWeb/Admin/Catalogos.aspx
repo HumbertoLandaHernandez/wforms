@@ -37,6 +37,13 @@
             <asp:Panel ID="pnlEdicion" runat="server" CssClass="card card-body" DefaultButton="btnGuardar">
                 <h5><asp:Literal ID="litTitulo" runat="server" Text="Nuevo registro" /></h5>
                 <asp:HiddenField ID="hfId" runat="server" />
+                <asp:PlaceHolder ID="phClave" runat="server">
+                    <div class="mb-2">
+                        <label class="form-label">Clave</label>
+                        <asp:TextBox ID="txtId" runat="server" CssClass="form-control" />
+                        <asp:RequiredFieldValidator ID="rfvId" runat="server" ControlToValidate="txtId" ErrorMessage="Requerido" CssClass="text-danger small" Display="Dynamic" />
+                    </div>
+                </asp:PlaceHolder>
                 <div class="mb-3">
                     <label class="form-label">Descripción</label>
                     <asp:TextBox ID="txtDesc" runat="server" CssClass="form-control" />

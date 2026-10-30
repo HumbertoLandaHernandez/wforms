@@ -18,6 +18,7 @@ namespace GenericaWeb.Admin
         protected global::System.Web.UI.WebControls.TextBox txtContrasena;
         protected global::System.Web.UI.WebControls.DropDownList ddlNombre;
         protected global::System.Web.UI.WebControls.DropDownList ddlRol;
+        protected global::System.Web.UI.WebControls.CheckBoxList cblRoles;
         protected global::System.Web.UI.WebControls.DropDownList ddlPermiso;
         protected global::System.Web.UI.WebControls.DropDownList ddlPermisosPaginas;
         protected global::System.Web.UI.WebControls.DropDownList ddlPaginaHome;

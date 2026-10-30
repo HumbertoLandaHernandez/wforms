@@ -6,7 +6,7 @@ using GenericaWeb.Seguridad;
 
 namespace GenericaWeb.Admin
 {
-    /// <summary>Mantenimiento de NombrePersonal, NombreBase, NombreTipo y Permiso (?t=Clave).</summary>
+    /// <summary>Mantenimiento de Nombre, NombreTipo y Permiso (?t=Clave).</summary>
     public partial class Catalogos : PaginaSegura
     {
         protected CatalogoDefinicion Definicion { get; private set; }
@@ -16,6 +16,7 @@ namespace GenericaWeb.Admin
             Definicion = CatalogoRepositorio.Buscar(Request.QueryString["t"]);
             Title = Definicion.Titulo;
             txtDesc.MaxLength = Definicion.LongitudDesc;
+            txtId.MaxLength = Definicion.LongitudId;
 
             rptCatalogos.DataSource = CatalogoRepositorio.Catalogos;
             rptCatalogos.DataBind();
@@ -24,19 +25,22 @@ namespace GenericaWeb.Admin
                 return;
 
             pnlEdicion.Visible = PuedeEditar;
+            Limpiar();
             CargarGrid();
         }
 
         protected void gvCatalogo_RowCommand(object sender, GridViewCommandEventArgs e)
         {
-            var id = int.Parse((string)e.CommandArgument);
+            var id = (string)e.CommandArgument;
             if (e.CommandName == "Editar")
             {
                 var desc = CatalogoRepositorio.ObtenerDescripcion(Definicion, id);
                 if (desc == null)
                     return;
 
-                hfId.Value = id.ToString();
+                hfId.Value = id;
+                txtId.Text = id;
+                txtId.Enabled = false;   // la clave la referencian otras tablas
                 txtDesc.Text = desc;
                 litTitulo.Text = "Editar registro";
             }
@@ -63,8 +67,7 @@ namespace GenericaWeb.Admin
 
             try
             {
-                var id = string.IsNullOrEmpty(hfId.Value) ? 0 : int.Parse(hfId.Value);
-                CatalogoRepositorio.Guardar(Definicion, id, txtDesc.Text.Trim(), UsuarioActual.UsuarioId, UsuarioActual.UsuarioDesc);
+                CatalogoRepositorio.Guardar(Definicion, hfId.Value, txtId.Text.Trim(), txtDesc.Text.Trim(), UsuarioActual.UsuarioDesc);
                 MostrarMensaje(lblMensaje, "Registro guardado.", true);
                 Limpiar();
                 CargarGrid();
@@ -82,7 +85,9 @@ namespace GenericaWeb.Admin
 
         private void Limpiar()
         {
-            hfId.Value = txtDesc.Text = string.Empty;
+            hfId.Value = txtId.Text = txtDesc.Text = string.Empty;
+            txtId.Enabled = true;
+            phClave.Visible = rfvId.Enabled = Definicion.IdEsTexto;
             litTitulo.Text = "Nuevo registro";
         }
 

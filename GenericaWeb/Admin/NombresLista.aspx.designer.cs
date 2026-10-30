@@ -9,11 +9,19 @@ namespace GenericaWeb.Admin
     public partial class NombresLista
     {
         protected global::System.Web.UI.WebControls.Label lblMensaje;
+        protected global::System.Web.UI.WebControls.GridView gvListas;
         protected global::System.Web.UI.WebControls.Panel pnlEdicion;
-        protected global::System.Web.UI.WebControls.DropDownList ddlNombrePersonal;
-        protected global::System.Web.UI.WebControls.DropDownList ddlNombreTipo;
-        protected global::System.Web.UI.WebControls.DropDownList ddlNombreBase;
+        protected global::System.Web.UI.WebControls.Literal litTitulo;
+        protected global::System.Web.UI.WebControls.HiddenField hfId;
+        protected global::System.Web.UI.WebControls.TextBox txtDesc;
+        protected global::System.Web.UI.WebControls.Button btnGuardar;
+        protected global::System.Web.UI.WebControls.Button btnComponer;
+        protected global::System.Web.UI.WebControls.Button btnNuevo;
+        protected global::System.Web.UI.WebControls.Panel pnlElementos;
+        protected global::System.Web.UI.WebControls.GridView gvElementos;
+        protected global::System.Web.UI.WebControls.PlaceHolder phAgregar;
+        protected global::System.Web.UI.WebControls.DropDownList ddlTipo;
+        protected global::System.Web.UI.WebControls.DropDownList ddlNombre;
         protected global::System.Web.UI.WebControls.Button btnAgregar;
-        protected global::System.Web.UI.WebControls.GridView gvNombres;
     }
 }

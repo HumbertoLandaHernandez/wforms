@@ -13,8 +13,8 @@ namespace GenericaWeb
         {
             litNombre.Text = UsuarioActual.NombreCompleto;
             litUsuario.Text = UsuarioActual.UsuarioDesc;
-            litRol.Text = UsuarioActual.RolDesc;
-            litPermiso.Text = PuedeEditar ? "Lectura y escritura" : "Solo lectura";
+            litRol.Text = string.Join(", ", UsuarioActual.Roles);
+            litPermiso.Text = EsAdministrador ? "Administrador (acceso total)" : PuedeEditar ? "Lectura y escritura" : "Solo lectura";
 
             var cookie = Request.Cookies[JwtServicio.NombreCookie];
             DateTime expiraUtc;

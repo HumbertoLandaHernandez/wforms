@@ -14,6 +14,9 @@ namespace GenericaWeb.Admin
         protected global::System.Web.UI.WebControls.Panel pnlEdicion;
         protected global::System.Web.UI.WebControls.Literal litTitulo;
         protected global::System.Web.UI.WebControls.HiddenField hfId;
+        protected global::System.Web.UI.WebControls.PlaceHolder phClave;
+        protected global::System.Web.UI.WebControls.TextBox txtId;
+        protected global::System.Web.UI.WebControls.RequiredFieldValidator rfvId;
         protected global::System.Web.UI.WebControls.TextBox txtDesc;
         protected global::System.Web.UI.WebControls.Button btnGuardar;
         protected global::System.Web.UI.WebControls.Button btnNuevo;

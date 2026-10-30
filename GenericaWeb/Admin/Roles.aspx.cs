@@ -15,7 +15,7 @@ namespace GenericaWeb.Admin
 
             // RolPaginaHomeId es tinyint: solo páginas con Id <= 255.
             Combos.Paginas(ddlPaginaHome, true, byte.MaxValue);
-            Combos.ListasPermisos(ddlPermisos, false);
+            Combos.ListasPermisos(ddlPermisos);
             pnlEdicion.Visible = PuedeEditar;
             CargarGrid();
         }

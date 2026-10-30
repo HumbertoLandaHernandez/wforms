@@ -21,29 +21,35 @@ namespace GenericaWeb.Admin
 
         protected void gvListas_RowCommand(object sender, GridViewCommandEventArgs e)
         {
-            var id = byte.Parse((string)e.CommandArgument);
+            var id = short.Parse((string)e.CommandArgument);
             if (e.CommandName == "Editar")
             {
-                var fila = ListaPaginaRepositorio.Obtener(id);
+                var fila = PaginaListaRepositorio.Obtener(id);
                 if (fila == null)
                     return;
 
                 hfId.Value = id.ToString();
-                txtDesc.Text = (string)fila["ListaPaginaDesc"];
-                txtComentario.Text = (string)fila["ListaPaginaComentario"];
-                var elementos = ListaPaginaRepositorio.Elementos(id);
+                txtDesc.Text = (string)fila["PaginaListaDesc"];
+                txtComentario.Text = (string)fila["PaginaListaComentario"];
+                var elementos = PaginaListaRepositorio.Elementos(id);
                 foreach (ListItem item in cblPaginas.Items)
                     item.Selected = elementos.Contains(short.Parse(item.Value));
-                litTitulo.Text = "Editar grupo";
+                litTitulo.Text = "Editar lista";
             }
             else if (e.CommandName == "Eliminar" && ExigirEdicion(lblMensaje))
             {
                 try
                 {
-                    ListaPaginaRepositorio.Eliminar(id);
-                    MostrarMensaje(lblMensaje, "Grupo eliminado.", true);
-                    Limpiar();
-                    CargarGrid();
+                    if (PaginaListaRepositorio.Eliminar(id))
+                    {
+                        MostrarMensaje(lblMensaje, "Lista eliminada.", true);
+                        Limpiar();
+                        CargarGrid();
+                    }
+                    else
+                    {
+                        MostrarMensaje(lblMensaje, "La lista está asignada a uno o más usuarios.", false);
+                    }
                 }
                 catch (SqlException ex)
                 {
@@ -64,11 +70,11 @@ namespace GenericaWeb.Admin
             var paginas = cblPaginas.Items.Cast<ListItem>().Where(i => i.Selected).Select(i => short.Parse(i.Value));
             try
             {
-                ListaPaginaRepositorio.Guardar(
-                    string.IsNullOrEmpty(hfId.Value) ? (byte)0 : byte.Parse(hfId.Value),
+                PaginaListaRepositorio.Guardar(
+                    string.IsNullOrEmpty(hfId.Value) ? (short)0 : short.Parse(hfId.Value),
                     txtDesc.Text.Trim(), comentario, paginas, UsuarioActual.UsuarioDesc);
 
-                MostrarMensaje(lblMensaje, "Grupo guardado.", true);
+                MostrarMensaje(lblMensaje, "Lista guardada.", true);
                 Limpiar();
                 CargarGrid();
             }
@@ -87,12 +93,12 @@ namespace GenericaWeb.Admin
         {
             hfId.Value = txtDesc.Text = txtComentario.Text = string.Empty;
             cblPaginas.ClearSelection();
-            litTitulo.Text = "Nuevo grupo";
+            litTitulo.Text = "Nueva lista";
         }
 
         private void CargarGrid()
         {
-            gvListas.DataSource = ListaPaginaRepositorio.Listar();
+            gvListas.DataSource = PaginaListaRepositorio.Listar();
             gvListas.DataBind();
         }
     }
